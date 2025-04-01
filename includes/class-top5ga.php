@@ -115,6 +115,8 @@ class Top5ga {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-top5ga-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-top5ga-settings.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-top5ga-analytics.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
@@ -151,12 +153,20 @@ class Top5ga {
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
+	    $plugin_admin = new Top5ga_Admin( $this->get_top5ga(), $this->get_version() );
+	    $plugin_settings = new Top5ga_Settings( $this->get_top5ga(), $this->get_version() );
+	    $plugin_analytics = new Top5ga_Analytics( $this->get_top5ga(), $this->get_version() ); // Add this
 
-		$plugin_admin = new Top5ga_Admin( $this->get_top5ga(), $this->get_version() );
+	    $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+	    $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+	    $this->loader->add_action( 'wp_ajax_top5ga_disconnect', $plugin_admin, 'top5ga_disconnect_callback' );
+	    $this->loader->add_action( 'top5ga_refresh_token_event', $plugin_admin, 'top5ga_refresh_token' );
+	    $this->loader->add_action( 'top5ga_refresh_token_event', $plugin_admin, 'top5ga_refresh_token' );
+	    $this->loader->add_action( 'top5ga_update_post_views_event', $plugin_admin, 'top5ga_update_post_views_cron' );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
+	    $this->loader->add_action( 'admin_menu', $plugin_settings, 'add_settings_page' );
+	    $this->loader->add_action( 'admin_init', $plugin_settings, 'register_settings' );
+	    $this->loader->add_action( 'admin_init', $plugin_settings, 'process_oauth_callback' );
 	}
 
 	/**
@@ -168,11 +178,12 @@ class Top5ga {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Top5ga_Public( $this->get_top5ga(), $this->get_version() );
+	    $plugin_public = new Top5ga_Public( $this->get_top5ga(), $this->get_version() );
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-
+	    $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+	    $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+	    // Hook into init to register shortcodes
+	    $this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
 	}
 
 	/**

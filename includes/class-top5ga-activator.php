@@ -30,7 +30,15 @@ class Top5ga_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
+	    // Schedule the token refresh event if it's not already scheduled.
+	    if ( ! wp_next_scheduled( 'top5ga_refresh_token_event' ) ) {
+	        wp_schedule_event( time(), 'hourly', 'top5ga_refresh_token_event' );
+	    }
 
+	    // Schedule the GA post views update event if it's not already scheduled.
+	    if ( ! wp_next_scheduled( 'top5ga_update_post_views_event' ) ) {
+	        wp_schedule_event( time(), 'hourly', 'top5ga_update_post_views_event' );
+	    }
 	}
 
 }
