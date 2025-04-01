@@ -1,6 +1,6 @@
 === Top 5 GA ===
-Contributors: yourname
-Donate link: https://yourdonatelink.com
+Contributors: jwilson529
+Donate link: https://oneclickcontent.com/donate/
 Tags: google analytics, ga4, analytics, oauth, shortcode, post meta
 Requires at least: 5.0
 Tested up to: 6.2
