@@ -362,6 +362,7 @@ class Top5ga_Settings {
 
 		$code    = sanitize_text_field( $_GET['code'] );
 		$options = get_option( $this->option_name );
+		$redirect_uri = admin_url( 'options-general.php?page=top5ga-settings' );
 
 		$response = wp_remote_post(
 			'https://oauth2.googleapis.com/token',
@@ -370,7 +371,7 @@ class Top5ga_Settings {
 					'code'          => $code,
 					'client_id'     => $options['client_id'],
 					'client_secret' => $options['client_secret'],
-					'redirect_uri'  => 'https://e3eb-68-112-73-33.ngrok-free.app/wp-admin/options-general.php?page=top5ga-settings',
+					'redirect_uri'  => $redirect_uri ,
 					'grant_type'    => 'authorization_code',
 				),
 			)
@@ -441,15 +442,17 @@ class Top5ga_Settings {
 	 * @return   string                OAuth URL.
 	 */
 	private function get_oauth_url( $client_id ) {
-		$redirect_uri = 'https://e3eb-68-112-73-33.ngrok-free.app/wp-admin/options-general.php?page=top5ga-settings';
-		$params       = array(
-			'response_type' => 'code',
-			'client_id'     => $client_id,
-			'redirect_uri'  => $redirect_uri,
-			'scope'         => 'https://www.googleapis.com/auth/analytics.readonly',
-			'access_type'   => 'offline',
-			'prompt'        => 'consent',
-		);
-		return 'https://accounts.google.com/o/oauth2/auth?' . http_build_query( $params );
+	    // Dynamically get the local admin URL.
+	    $redirect_uri = admin_url( 'options-general.php?page=top5ga-settings' );
+	    
+	    $params = array(
+	        'response_type' => 'code',
+	        'client_id'     => $client_id,
+	        'redirect_uri'  => $redirect_uri,
+	        'scope'         => 'https://www.googleapis.com/auth/analytics.readonly',
+	        'access_type'   => 'offline',
+	        'prompt'        => 'consent',
+	    );
+	    return 'https://accounts.google.com/o/oauth2/auth?' . http_build_query( $params );
 	}
 }
