@@ -30,7 +30,5 @@ class Top5ga_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
 	}
-
 }

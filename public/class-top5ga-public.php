@@ -44,14 +44,13 @@ class Top5ga_Public {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $top5ga       The name of the plugin.
-	 * @param      string    $version    The version of this plugin.
+	 * @param      string $top5ga       The name of the plugin.
+	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $top5ga, $version ) {
 
-		$this->top5ga = $top5ga;
+		$this->top5ga  = $top5ga;
 		$this->version = $version;
-
 	}
 
 	/**
@@ -74,7 +73,6 @@ class Top5ga_Public {
 		 */
 
 		wp_enqueue_style( $this->top5ga, plugin_dir_url( __FILE__ ) . 'css/top5ga-public.css', array(), $this->version, 'all' );
-
 	}
 
 	/**
@@ -97,14 +95,13 @@ class Top5ga_Public {
 		 */
 
 		wp_enqueue_script( $this->top5ga, plugin_dir_url( __FILE__ ) . 'js/top5ga-public.js', array( 'jquery' ), $this->version, false );
-
 	}
 
 	/**
 	 * Register shortcodes.
 	 */
 	public function register_shortcodes() {
-	    add_shortcode( 'top_ga_posts', array( $this, 'top_ga_posts_shortcode' ) );
+		add_shortcode( 'top_ga_posts', array( $this, 'top_ga_posts_shortcode' ) );
 	}
 
 	/**
@@ -116,34 +113,37 @@ class Top5ga_Public {
 	 * @return string HTML output.
 	 */
 	public function top_ga_posts_shortcode( $atts ) {
-	    $atts = shortcode_atts( array(
-	        'limit'     => 5,
-	        'post_type' => 'post',
-	    ), $atts, 'top_ga_posts' );
+		$atts = shortcode_atts(
+			array(
+				'limit'     => 5,
+				'post_type' => 'post',
+			),
+			$atts,
+			'top_ga_posts'
+		);
 
-	    $query_args = array(
-	        'post_type'      => $atts['post_type'],
-	        'meta_key'       => '_ga_page_views',
-	        'orderby'        => 'meta_value_num',
-	        'order'          => 'DESC',
-	        'posts_per_page' => intval( $atts['limit'] ),
-	    );
+		$query_args = array(
+			'post_type'      => $atts['post_type'],
+			'meta_key'       => '_ga_page_views',
+			'orderby'        => 'meta_value_num',
+			'order'          => 'DESC',
+			'posts_per_page' => intval( $atts['limit'] ),
+		);
 
-	    $query = new WP_Query( $query_args );
-	    if ( $query->have_posts() ) {
-	        $output = '<ul>';
-	        while ( $query->have_posts() ) {
-	            $query->the_post();
-	            $views = get_post_meta( get_the_ID(), '_ga_page_views', true );
-	            $output .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a> (' . esc_html( $views ) . ' views)</li>';
-	        }
-	        $output .= '</ul>';
-	        wp_reset_postdata();
-	    } else {
-	        $output = '<p>No posts found.</p>';
-	    }
+		$query = new WP_Query( $query_args );
+		if ( $query->have_posts() ) {
+			$output = '<ul>';
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$views   = get_post_meta( get_the_ID(), '_ga_page_views', true );
+				$output .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a> (' . esc_html( $views ) . ' views)</li>';
+			}
+			$output .= '</ul>';
+			wp_reset_postdata();
+		} else {
+			$output = '<p>No posts found.</p>';
+		}
 
-	    return $output;
+		return $output;
 	}
-
 }

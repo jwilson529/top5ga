@@ -4,7 +4,12 @@
   "description": "=== Plugin Name === Contributors: (this should be a list of wordpress.org userid's) Donate link: https://oneclickcontent.com/ Tags: comments, spam Requires at least: 3.0.1 Tested up to: 3.4 Stable tag: 4.3 License: GPLv2 or later License URI: http://www.gnu.org/licenses/gpl-2.0.html",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fix": "phpcbf -d error_reporting=\"E_ALL&~E_DEPRECATED\" --ignore=*/vendor/*,*/node_modules/* --standard=WordPress --extensions=php .",
+    "check": "phpcs -d error_reporting=\"E_ALL&~E_DEPRECATED\" --ignore=*/vendor/*,*/node_modules/* --standard=WordPress --extensions=php . > check.txt",
+    "phpmd": "phpmd . text phpmd.xml --exclude vendor,node_modules > phpmd.txt",
+    "dist": "find . -name '.DS_Store' -type f -delete && zip -r top5ga.zip . -x \"node_modules/*\" \"assets/*\" \"*.git/*\" \"*.github/*\" \"*.gitignore\" \"*.zipignore\" \"check.txt\" \"phpmd.txt\" \"package.json\" \"package-lock.json\" \"phpmd.xml\" \"composer.lock\" \"composer.json\" \"README.md\"",
+    "plugin-check": "wp plugin check ."
   },
   "author": "",
   "license": "ISC"

@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       Top 5 Posts from GA
  * Plugin URI:        https://oneclickcontent.com
- * Description:       Gathers Analytics data from Google Analytics Data API and maps it to post and page titles. 
+ * Description:       Gathers Analytics data from Google Analytics Data API and maps it to post and page titles.
  * Version:           1.0.0
  * Author:            James Wilson
  * Author URI:        https://oneclickcontent.com/
@@ -77,6 +77,5 @@ function run_top5ga() {
 
 	$plugin = new Top5ga();
 	$plugin->run();
-
 }
 run_top5ga();

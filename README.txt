@@ -1,114 +1,58 @@
-=== Plugin Name ===
-Contributors: (this should be a list of wordpress.org userid's)
-Donate link: https://oneclickcontent.com/
-Tags: comments, spam
-Requires at least: 3.0.1
-Tested up to: 3.4
-Stable tag: 4.3
+=== Top 5 GA ===
+Contributors: yourname
+Donate link: https://yourdonatelink.com
+Tags: google analytics, ga4, analytics, oauth, shortcode, post meta
+Requires at least: 5.0
+Tested up to: 6.2
+Stable tag: 1.0.0
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
-
-This is the long description.  No limit, and you can use Markdown (as well as in the following sections).
-
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
-
-A few notes about the sections above:
-
-*   "Contributors" is a comma separated list of wp.org/wp-plugins.org usernames
-*   "Tags" is a comma separated list of tags that apply to the plugin
-*   "Requires at least" is the lowest version that the plugin will work on
-*   "Tested up to" is the highest version that you've *successfully used to test the plugin*. Note that it might work on
-higher versions... this is just the highest one you've verified.
-*   Stable tag should indicate the Subversion "tag" of the latest stable version, or "trunk," if you use `/trunk/` for
-stable.
-
-    Note that the `readme.txt` of the stable tag is the one that is considered the defining one for the plugin, so
-if the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used
-for displaying information about the plugin.  In this situation, the only thing considered from the trunk `readme.txt`
-is the stable tag pointer.  Thus, if you develop in trunk, you can update the trunk `readme.txt` to reflect changes in
-your in-development version, without having that information incorrectly disclosed about the current stable version
-that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
-
-    If no stable tag is provided, it is assumed that trunk is stable, but you should specify "trunk" if that's where
-you put the stable version, in order to eliminate any doubt.
+Top 5 GA is a headstart plugin that integrates Google Analytics (GA4) with WordPress. It retrieves GA data, maps view counts to posts by saving them as post meta, and provides a shortcode to display the top posts based on GA view counts. This plugin is not production ready but serves as a starting point for further development.
 
 == Installation ==
+1. Upload the plugin folder to the `/wp-content/plugins/` directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Navigate to **Settings > Top 5 GA** to configure the plugin.
+4. Enter your Google OAuth credentials (Client ID and Client Secret) as described below.
 
-This section describes how to install the plugin and get it working.
+== Google Cloud Setup ==
+To use Top 5 GA, you need to obtain OAuth credentials from Google Cloud:
+1. Visit [Google Cloud Console](https://console.cloud.google.com).
+2. Create a new project or select an existing one.
+3. Go to **APIs & Services > Dashboard** and click **Enable APIs and Services**.
+4. Enable the following APIs:
+   - **Google Analytics API**
+   - **Google Analytics Data API**
+5. Navigate to **APIs & Services > Credentials**.
+6. Click **Create Credentials** > **OAuth client ID**.
+7. Select **Web Application** as the application type.
+8. Under **Authorized redirect URIs**, add:
+https://yourdomain.com/wp-admin/options-general.php?page=top5ga-settings
+Replace `yourdomain.com` with your actual domain.
+9. Click **Create**. You will be provided with a **Client ID** and **Client Secret**.
+10. Enter these credentials on the plugin’s settings page.
 
-e.g.
-
-1. Upload `top5ga.php` to the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php do_action('top5ga_hook'); ?>` in your templates
+== Usage ==
+1. After connecting your Google Analytics account via OAuth, the plugin will retrieve your GA data.
+2. GA view counts are mapped to your posts by updating post meta (the meta key is `_ga_page_views`) using a scheduled cron job.
+3. To display the top posts based on GA data on the front-end, use the shortcode:
+[top_ga_posts limit=“5” post_type=“post”]
+- The `limit` attribute determines how many posts are displayed.
+- The `post_type` attribute lets you specify which post type to query.
 
 == Frequently Asked Questions ==
+= Why do I see a permission error? =
+Ensure that the GA **property ID** is used in the plugin settings and that your OAuth credentials have the required scopes.
 
-= A question that someone might have =
-
-An answer to that question.
-
-= What about foo bar? =
-
-Answer to foo bar dilemma.
-
-== Screenshots ==
-
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+= How often is the GA data updated? =
+GA data is updated hourly via a cron job. You can adjust the cron schedule in the code if needed.
 
 == Changelog ==
-
-= 1.0 =
-* A change since the previous version.
-* Another change.
-
-= 0.5 =
-* List versions from most recent at top to oldest at bottom.
+= 1.0.0 =
+* Initial release of Top 5 GA. Features include OAuth integration, GA data retrieval, post meta mapping, and a shortcode to display top posts.
 
 == Upgrade Notice ==
-
-= 1.0 =
-Upgrade notices describe the reason a user should upgrade.  No more than 300 characters.
-
-= 0.5 =
-This version fixes a security related bug.  Upgrade immediately.
-
-== Arbitrary section ==
-
-You may provide arbitrary sections, in the same format as the ones above.  This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation."  Arbitrary sections will be shown below the built-in sections outlined above.
-
-== A brief Markdown Example ==
-
-Ordered list:
-
-1. Some feature
-1. Another feature
-1. Something else about the plugin
-
-Unordered list:
-
-* something
-* something else
-* third thing
-
-Here's a link to [WordPress](http://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
-Titles are optional, naturally.
-
-[markdown syntax]: http://daringfireball.net/projects/markdown/syntax
-            "Markdown is what the parser uses to process much of the readme file"
-
-Markdown uses email style notation for blockquotes and I've been told:
-> Asterisks for *emphasis*. Double it up  for **strong**.
-
-`<?php code(); // goes in backticks ?>`
+= 1.0.0 =
+Initial release.

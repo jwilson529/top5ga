@@ -1,0 +1,46 @@
+name: 'build-test'
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup Node.js environment (force to use Node.js 20)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          check-latest: true
+
+      # Remove hidden files, excluding .git and .github directories
+      - name: Remove hidden files
+        run: find . -type f -name '.*' -not -name '.git' -not -name '.github' -exec rm -rf {} +
+
+      # Set up PHP environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+
+      # Install WPCS dependencies
+      - name: Install WPCS
+        run: |
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require "wp-coding-standards/wpcs"
+          composer global require "dealerdirect/phpcodesniffer-composer-installer"
+
+      # Run WPCS checks
+      - name: Run WPCS
+        run: |
+          ~/.composer/vendor/bin/phpcs --standard=WordPress . --ignore=vendor,node_modules
+        continue-on-error: true
