@@ -185,8 +185,8 @@ class Top5ga_Settings {
 	public function display_settings_page() {
 		$analytics = new Top5ga_Analytics( $this->top5ga, $this->version );
 		?>
-			<div class="wrap">
-				<h1><?php esc_html_e( 'Top 5 GA Settings', 'top5ga' ); ?></h1>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Top 5 GA Settings', 'top5ga' ); ?></h1>
 			<?php
 			if ( isset( $_GET['oauth'] ) && $_GET['oauth'] === 'success' ) {
 				echo '<div class="notice notice-success is-dismissible"><p>' .
@@ -194,27 +194,29 @@ class Top5ga_Settings {
 					'</p></div>';
 			}
 			?>
-				<form method="post" action="options.php">
+			<form method="post" action="options.php">
 				<?php
 				settings_fields( 'top5ga_settings_group' );
 				do_settings_sections( 'top5ga-settings' );
 				$this->display_analytics_selection( $analytics );
 				submit_button();
 				?>
-				</form>
-				<?php
-				$this->display_oauth_section();
-				$this->display_top_pages( $analytics );
-				?>
-			</div>
+			</form>
 			<?php
+			$this->display_oauth_section();
+			$this->display_top_pages( $analytics );
+			// Now show the worst performing posts table
+			$this->display_worst_posts( $analytics );
+			?>
+		</div>
+		<?php
 	}
 
-		/**
-		 * Display dropdowns for selecting Analytics account, property, and view.
-		 *
-		 * @param Top5ga_Analytics $analytics The analytics handler instance.
-		 */
+	/**
+	 * Display dropdowns for selecting Analytics account, property, and view.
+	 *
+	 * @param Top5ga_Analytics $analytics The analytics handler instance.
+	 */
 	private function display_analytics_selection( $analytics ) {
 		$options           = get_option( $this->option_name );
 		$analytics_options = $analytics->get_analytics_options();
@@ -256,11 +258,11 @@ class Top5ga_Settings {
 			<?php
 	}
 
-		/**
-		 * Display the top 10 pages from Analytics.
-		 *
-		 * @param Top5ga_Analytics $analytics The analytics handler instance.
-		 */
+	/**
+	 * Display the top 10 pages from Analytics.
+	 *
+	 * @param Top5ga_Analytics $analytics The analytics handler instance.
+	 */
 	private function display_top_pages( $analytics ) {
 		$options = get_option( $this->option_name );
 		if ( empty( $options['property_id'] ) ) {
@@ -298,6 +300,74 @@ class Top5ga_Settings {
 			</table>
 			<?php
 	}
+
+	/**
+	 * Display the worst performing posts in a table.
+	 *
+	 * This method fetches the worst pages (sorted in ascending order of pageviews),
+	 * maps each GA page path to a WordPress post (using the slug), and displays a table
+	 * with the post title, GA page path, pageviews, and an edit link if available.
+	 *
+	 * @param Top5ga_Analytics $analytics The analytics handler instance.
+	 */
+	private function display_worst_posts( $analytics ) {
+		$options = get_option( $this->option_name );
+		if ( empty( $options['property_id'] ) ) {
+			echo '<p>' . esc_html__( 'Please select an Analytics property and save settings to see worst performing posts.', 'top5ga' ) . '</p>';
+			return;
+		}
+
+		$worst_pages = $analytics->get_worst_pages( $options['property_id'], 10 );
+		if ( empty( $worst_pages ) ) {
+			echo '<p>' . esc_html__( 'No GA data available for worst performing posts.', 'top5ga' ) . '</p>';
+			return;
+		}
+
+		echo '<h2>' . esc_html__( 'Worst Performing Posts (Last 30 Days)', 'top5ga' ) . '</h2>';
+		echo '<table class="wp-list-table widefat fixed striped">';
+		echo '<thead>';
+		echo '<tr>';
+		echo '<th>' . esc_html__( 'WordPress Post', 'top5ga' ) . '</th>';
+		echo '<th>' . esc_html__( 'GA Page Path', 'top5ga' ) . '</th>';
+		echo '<th>' . esc_html__( 'Pageviews', 'top5ga' ) . '</th>';
+		echo '<th>' . esc_html__( 'Edit Link', 'top5ga' ) . '</th>';
+		echo '</tr>';
+		echo '</thead>';
+		echo '<tbody>';
+
+		foreach ( $worst_pages as $page ) {
+			// Normalize the path and assume the last segment is the post slug.
+			$path  = trim( $page['path'], '/' );
+			$parts = explode( '/', $path );
+			$slug  = end( $parts );
+			$post  = get_page_by_path( $slug, OBJECT, 'post' );
+
+			if ( $post ) {
+				$post_title = get_the_title( $post->ID );
+				$edit_link  = get_edit_post_link( $post->ID );
+			} else {
+				$post_title = esc_html__( 'No matching post', 'top5ga' );
+				$edit_link  = '';
+			}
+
+			echo '<tr>';
+			echo '<td>' . esc_html( $post_title ) . '</td>';
+			echo '<td>' . esc_html( $page['path'] ) . '</td>';
+			echo '<td>' . esc_html( $page['pageviews'] ) . '</td>';
+			echo '<td>';
+			if ( $edit_link ) {
+				echo '<a href="' . esc_url( $edit_link ) . '" target="_blank">' . esc_html__( 'Edit', 'top5ga' ) . '</a>';
+			} else {
+				echo esc_html__( 'N/A', 'top5ga' );
+			}
+			echo '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody>';
+		echo '</table>';
+	}
+
 	/**
 	 * Display the OAuth connection section.
 	 *
@@ -311,7 +381,7 @@ class Top5ga_Settings {
 		// Clear cache and get fresh options
 		wp_cache_delete( 'top5ga_settings', 'options' );
 		$options = get_option( $this->option_name );
-		// error_log( 'Top5ga: Options in display_oauth_section: ' . print_r( $options, true ) ); // Debug
+		error_log( 'Top5ga: Options in display_oauth_section: ' . print_r( $options, true ) ); // Debug
 
 		if ( ! empty( $options['access_token'] ) ) {
 			echo '<h2>' . esc_html__( 'Google Analytics Connected', 'top5ga' ) . '</h2>';
@@ -346,7 +416,7 @@ class Top5ga_Settings {
 			<?php
 		} elseif ( ! empty( $options['client_id'] ) && ! empty( $options['client_secret'] ) ) {
 			$auth_url = $this->get_oauth_url( $options['client_id'] );
-			// error_log( 'Top5ga: Generated OAuth URL: ' . $auth_url );
+			error_log( 'Top5ga: Generated OAuth URL: ' . $auth_url );
 			echo '<h2>' . esc_html__( 'Connect to Google Analytics', 'top5ga' ) . '</h2>';
 			echo '<p>' . esc_html__( 'Click the button below to authorize access to your Google Analytics account.', 'top5ga' ) . '</p>';
 			echo '<a class="button button-primary" href="' . esc_url( $auth_url ) . '">' . esc_html__( 'Connect to Google Analytics', 'top5ga' ) . '</a>';
@@ -371,7 +441,7 @@ class Top5ga_Settings {
 					'code'          => $code,
 					'client_id'     => $options['client_id'],
 					'client_secret' => $options['client_secret'],
-					'redirect_uri'  => $redirect_uri ,
+					'redirect_uri'  => $redirect_uri,
 					'grant_type'    => 'authorization_code',
 				),
 			)
@@ -383,15 +453,22 @@ class Top5ga_Settings {
 		}
 
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
-		// error_log( 'Top5ga: Token exchange response: ' . print_r( $data, true ) );
+		error_log( 'Top5ga: Token exchange response: ' . print_r( $data, true ) );
 
 		if ( ! empty( $data['access_token'] ) ) {
 			$user_info = wp_remote_get(
-				'https://www.googleapis.com/oauth2/v3/userinfo',
-				array(
-					'headers' => array( 'Authorization' => 'Bearer ' . $data['access_token'] ),
-				)
+			    'https://www.googleapis.com/oauth2/v3/userinfo',
+			    array(
+			        'headers' => array( 'Authorization' => 'Bearer ' . $data['access_token'] ),
+			    )
 			);
+
+			if ( is_wp_error( $user_info ) ) {
+			    error_log( 'Top5ga: User info request failed: ' . $user_info->get_error_message() );
+			} else {
+			    $user_data = json_decode( wp_remote_retrieve_body( $user_info ), true );
+			    error_log( 'Top5ga: Raw user info response: ' . print_r( $user_data, true ) );
+			}
 
 			$email = 'Unknown';
 			if ( ! is_wp_error( $user_info ) ) {
@@ -412,18 +489,18 @@ class Top5ga_Settings {
 			delete_option( $this->option_name ); // Clear existing option
 			$added = add_option( $this->option_name, $google_oauth ); // Add fresh
 			if ( ! $added ) {
-				// error_log( 'Top5ga: Failed to add OAuth options: ' . print_r( $google_oauth, true ) );
+				error_log( 'Top5ga: Failed to add OAuth options: ' . print_r( $google_oauth, true ) );
 				update_option( $this->option_name, $google_oauth ); // Fallback to update
 			}
-			// error_log( 'Top5ga: OAuth options saved attempt: ' . print_r( $google_oauth, true ) );
+			error_log( 'Top5ga: OAuth options saved attempt: ' . print_r( $google_oauth, true ) );
 
 			// Verify save
 			wp_cache_delete( 'top5ga_settings', 'options' );
 			$saved_options = get_option( $this->option_name );
-			// error_log( 'Top5ga: Verified saved options: ' . print_r( $saved_options, true ) );
+			error_log( 'Top5ga: Verified saved options: ' . print_r( $saved_options, true ) );
 
 			if ( empty( $saved_options['access_token'] ) ) {
-				// error_log( 'Top5ga: Save verification failed - no access token found');
+				error_log( 'Top5ga: Save verification failed - no access token found');
 			}
 
 			wp_redirect( admin_url( 'options-general.php?page=top5ga-settings&oauth=success&nocache=' . time() ) );
